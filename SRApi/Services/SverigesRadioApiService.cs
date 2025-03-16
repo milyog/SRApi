@@ -9,28 +9,20 @@ namespace SRApi.Services
     {
         private readonly HttpClient _httpClient = httpClientFactory.CreateClient("SverigesRadioApi");
 
-        //public SverigesRadioApiService(IHttpClientFactory httpClentFactory)
-        //{
-        //    _httpClient = httpClentFactory.CreateClient("SverigesRadioApi");
-        //}
-
-        public async Task<List<Channel>> GetChannelsAsync()
+        public async Task<ChannelsAndPagination> GetChannelsAsync(int page = 1)
         {
             try
             {
-                var response = await _httpClient.GetAsync("channels?format=json");
+                var response = await _httpClient.GetAsync($"channels?format=json&page={page}");
                 response.EnsureSuccessStatusCode();
 
-                var rawData = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"apidata: {rawData}");
+                var result = await response.Content.ReadFromJsonAsync<ChannelsAndPagination>();
 
-                //var data = JsonConvert.DeserializeObject<ChannelList>(response);
-
-                var result = await response.Content.ReadFromJsonAsync<ChannelList>();
-                var channels = result?.Channels ?? new List<Channel>(); // Skydda mot null
-
-                //var channelsTest = await response.Content.ReadFromJsonAsync<List<Channel>>();
-                return channels; ;//await response.Content.ReadFromJsonAsync<List<Channel>>() ?? new List<Channel>();
+                return new ChannelsAndPagination
+                {                 
+                    Channels = result?.Channels ?? new List<Channel>(),
+                    Pagination = result?.Pagination
+                };
             }
             catch (HttpRequestException ex)
             {
@@ -40,7 +32,8 @@ namespace SRApi.Services
             {
                 Console.WriteLine($"Unexpected error: {ex.Message}");
             }
-            return new List<Channel>(); // FIXA                                       
+
+            return null; // FIXA                                       
         }
     }
 }
