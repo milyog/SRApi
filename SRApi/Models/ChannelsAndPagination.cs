@@ -2,8 +2,11 @@
 
 namespace SRApi.Models
 {
-    public class ChannelList
+    public class ChannelsAndPagination
     {
+        [JsonPropertyName("pagination")]
+        public Pagination Pagination { get; set; }
+
         [JsonPropertyName("channels")]
         public List<Channel> Channels { get; set; } 
     }
